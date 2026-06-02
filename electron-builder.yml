@@ -1,0 +1,120 @@
+# electron-builder configuration — Windows + macOS
+# Documentation: https://www.electron.build/configuration/configuration
+
+appId: com.pos.v2.desktop
+productName: POS v2
+copyright: "Copyright © 2026"
+
+# Build output directory
+directories:
+  output: release
+  buildResources: resources
+
+# Files to include in the packaged Electron app
+files:
+  - dist-electron/**/*
+  - "!dist-electron/**/*.map"
+  - node_modules/**/*
+  - package.json
+  - .env
+
+# Copy the built React frontend into app resources
+extraResources:
+  - from: ../POS-frontend-v2/dist
+    to: frontend-dist
+    filter:
+      - "**/*"
+      - "!**/*.map"
+
+# ── Windows ────────────────────────────────────────────────────────────────────
+win:
+  target:
+    - target: nsis          # Standard installer (.exe)
+      arch: [x64, ia32]    # 64-bit + 32-bit (older PCs common in Nigeria)
+    - target: portable      # Single-file .exe, no installation required
+      arch: [x64]
+
+  icon: resources/icon.ico
+
+  # Do not require admin rights to install
+  requestedExecutionLevel: asInvoker
+
+  # Code signing (uncomment when you have a certificate)
+  # signAndEditExecutable: true
+  # certificateFile: resources/certificate.pfx
+  # certificatePassword: ${env.CERTIFICATE_PASSWORD}
+  # rfc3161TimeStampServer: http://timestamp.sectigo.com
+
+nsis:
+  oneClick: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "POS v2"
+  menuCategory: "POS v2"
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+  artifactName: "POS-Setup-${version}.exe"
+  deleteAppDataOnUninstall: false
+
+# ── macOS ──────────────────────────────────────────────────────────────────────
+mac:
+  target:
+    - target: dmg           # Disk image — standard macOS distribution method
+      arch: [x64, arm64]   # Intel + Apple Silicon (M1/M2/M3/M4)
+    - target: zip           # Zipped .app for manual distribution
+      arch: [x64, arm64]
+
+  icon: resources/icon.icns   # macOS requires .icns format (multi-size)
+
+  category: public.app-category.business
+
+  # Hardened runtime is required for Apple notarization.
+  # Without notarization, Gatekeeper shows a warning on first open.
+  hardenedRuntime: true
+  gatekeeperAssess: false
+
+  # Entitlements grant permissions required by the hardened runtime
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
+
+  # Code signing (requires Apple Developer Program — $99/year)
+  # Leave blank for development/internal use; users must right-click → Open
+  # identity: "Developer ID Application: Your Name (TEAMID)"
+
+  # Notarization (requires code signing + Apple account credentials)
+  # notarize:
+  #   teamId: "YOUR_TEAM_ID"
+
+dmg:
+  artifactName: "POS-${version}.dmg"
+  title: "POS v2 ${version}"
+  icon: resources/icon.icns
+  iconSize: 100
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+  window:
+    width: 540
+    height: 380
+
+# ── Auto-update publish ────────────────────────────────────────────────────────
+# Option A: GitHub Releases (recommended — free)
+# Supports both Windows (.exe + .yml) and macOS (.dmg + .yml) releases
+publish:
+  provider: github
+  owner: your-github-username
+  repo: pos-v2-releases
+  private: false
+  releaseType: release
+
+# Option B: Self-hosted (uncomment to use instead)
+# publish:
+#   provider: generic
+#   url: https://updates.yourstore.com
+#   useMultipleRangeRequest: false

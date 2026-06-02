@@ -1,0 +1,6 @@
+node_modules/
+dist-electron/
+release/
+.env
+*.log
+resources/certificate.pfx

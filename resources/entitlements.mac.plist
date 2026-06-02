@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!--
+      Required for Electron's JIT compilation (V8) under hardened runtime.
+      Without this, the app won't launch with hardenedRuntime: true.
+    -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!--
+      Required for Electron's use of unsigned dynamic libraries.
+    -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!--
+      Required for Electron's use of dyld environment variables
+      during development (e.g. DYLD_INSERT_LIBRARIES).
+    -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+
+    <!--
+      Required for thermal printer access via USB serial port.
+      serialport library communicates with /dev/tty.usbserial-* devices.
+    -->
+    <key>com.apple.security.device.serial</key>
+    <true/>
+
+    <!--
+      Required for the app to make outbound HTTP/HTTPS connections
+      to the POS backend API.
+    -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+
+    <!--
+      Required if using network printers (TCP/IP connections).
+    -->
+    <key>com.apple.security.network.server</key>
+    <false/>
+
+  </dict>
+</plist>
