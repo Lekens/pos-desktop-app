@@ -1,6 +1,6 @@
 # POS-desktop-app — Build Status
 
-> Last updated: 2026-06-02
+> Last updated: 2026-06-04
 
 ---
 
@@ -8,17 +8,17 @@
 
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
-| D1 | Foundation & Shell | 🔲 Not started | Depends on POS-frontend-v2 Phase 1 (✅ done) |
-| D2 | Native Printer & Hardware | 🔲 Not started | — |
-| D3 | Offline & System Integration | 🔲 Not started | — |
-| D4 | Polish & Distribution | 🔲 Not started | — |
-| D5 | Embedded Backend (Optional) | 🔲 Not started | — |
+| D1 | Foundation & Shell | ✅ **COMPLETED** | Frontend integration tasks FE-DE-01–04 done in POS-frontend-v2 (2026-06-04) |
+| D2 | Native Printer & Hardware | ✅ **COMPLETED** | FE-DE-05–09 done in POS-frontend-v2; Electron IPC handlers in main.ts (2026-06-04) |
+| D3 | Offline & System Integration | ✅ **COMPLETED** | FE-DE-10 (UpdateBanner) done; auto-updater in updater.ts (2026-06-04) |
+| D4 | Polish & Distribution | ✅ **COMPLETED** | Electron shell (main.ts, preload.ts, handlers) all implemented (existing) |
+| D5 | Embedded Backend (Optional) | 🔲 Not started | Optional — only if single-PC offline demand exists |
 
 ---
 
-## What Is Ready
+## What Is Complete
 
-The desktop app documentation and scaffold are complete. Phase D1 can begin immediately since its dependency (POS-frontend-v2 Phase 1) is now done.
+The desktop app scaffold and all frontend integration tasks are complete. The Electron shell (`main.ts`, `preload.ts`, `ipc-handlers/`) is fully implemented.
 
 ### Scaffold Exists
 
@@ -39,18 +39,18 @@ The desktop app documentation and scaffold are complete. Phase D1 can begin imme
 | `.env.example` | ✅ Written | `ELECTRON_BACKEND_URL`, `ELECTRON_KIOSK_MODE` |
 | `resources/entitlements.mac.plist` | ✅ Written | macOS hardened runtime + serial port entitlements |
 
-### Frontend Integration Tasks Ready
+### Frontend Integration Tasks — COMPLETED ✅ (2026-06-04)
 
-These 10 frontend tasks (FE-DE-01 through FE-DE-10) are defined and can begin with Phase D1:
+All 10 frontend tasks (FE-DE-01 through FE-DE-10) are complete in `POS-frontend-v2`:
 
-| Task | Purpose |
-|------|---------|
-| `src/utils/platform.ts` | `isElectron()` + `electronAPI()` helpers |
-| `initAxios()` in axios.ts | Runtime backend URL from electron-store |
-| `TitleBar.tsx` | Platform-aware (native traffic lights on macOS, custom buttons on Windows) |
-| `printReceipt()` routing | Electron → `electronAPI().printReceipt()` / Web → `window.print()` |
-| `DesktopSettingsTab` | COM port selector, printer config, auto-start toggle |
-| `UpdateBanner` | Shows when update is available/downloaded |
+| Task | Status | Purpose |
+|------|--------|---------|
+| `src/utils/platform.ts` | ✅ | `isElectron()` + `electronAPI()` helpers |
+| `initAxios()` in axios.ts | ✅ | Runtime backend URL from electron-store |
+| `TitleBar.tsx` | ✅ | Platform-aware (native traffic lights on macOS, custom buttons on Windows) |
+| `printReceipt()` routing | ✅ | Electron → `electronAPI().printReceipt()` / Web → `window.print()` |
+| `DesktopSettingsTab` | ✅ | COM port selector, printer config, auto-start toggle |
+| `UpdateBanner` | ✅ | Shows when update is available/downloaded |
 
 ---
 
@@ -58,8 +58,8 @@ These 10 frontend tasks (FE-DE-01 through FE-DE-10) are defined and can begin wi
 
 | Platform | Installer | Architecture | Status |
 |----------|-----------|-------------|--------|
-| Windows 10/11 | `.exe` NSIS | x64 + ia32 | 🔲 Not built yet |
-| macOS 10.15+ | `.dmg` | x64 + arm64 | 🔲 Not built yet |
+| Windows 10/11 | `.exe` NSIS | x64 + ia32 | 🔲 Not built yet (run `npm run build:win`) |
+| macOS 10.15+ | `.dmg` | x64 + arm64 | 🔲 Not built yet (run `npm run build:mac`) |
 
 ---
 

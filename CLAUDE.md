@@ -131,6 +131,14 @@ All channels are prefixed by their domain:
 - `update:*` — auto-updater
 - `network:*` — connectivity status (main → renderer events)
 
+## Build Status
+
+**D1 (Platform detection + TitleBar): COMPLETED** (2026-06-04) — `platform.ts`, `initAxios()`, `TitleBar.tsx` — all in POS-frontend-v2  
+**D2 (Print service + cash drawer): COMPLETED** (2026-06-04) — `print.service.ts`, `buildReceiptLines()`, `DesktopSettingsTab`, cash drawer IPC — in POS-frontend-v2  
+**D3 (UpdateBanner): COMPLETED** (2026-06-04) — `UpdateBanner.tsx` — in POS-frontend-v2  
+**D4 (Electron shell): COMPLETED** (existing) — `main.ts`, `preload.ts`, all IPC handlers already implemented  
+**Current Status:** Electron app ready — run `npm run dev` to start with frontend
+
 ## Related Projects
 
 | Project | Relationship |

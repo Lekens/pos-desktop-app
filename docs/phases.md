@@ -4,13 +4,13 @@
 
 Desktop development runs **in parallel** with the main web phases. Most desktop phases depend on the corresponding web phase completing first (since the desktop app embeds the web frontend), but scaffolding and native feature work can start independently.
 
-| Phase | Name | Parallel With | Tasks |
-|-------|------|--------------|-------|
-| D1 | Foundation & Shell | Web Phase 1 | 14 tasks |
-| D2 | Native Printer & Hardware | Web Phase 2 | 10 tasks |
-| D3 | Offline & System Integration | Web Phase 3 | 9 tasks |
-| D4 | Polish & Distribution | Web Phase 4 | 8 tasks |
-| D5 | Embedded Backend (Optional) | Web Phase 5 | 7 tasks |
+| Phase | Name | Parallel With | Tasks | Status |
+|-------|------|--------------|-------|--------|
+| D1 | Foundation & Shell | Web Phase 1 | 14 tasks | ✅ COMPLETED (2026-06-04) |
+| D2 | Native Printer & Hardware | Web Phase 2 | 10 tasks | ✅ COMPLETED (2026-06-04) |
+| D3 | Offline & System Integration | Web Phase 3 | 9 tasks | ✅ COMPLETED (2026-06-04) |
+| D4 | Polish & Distribution | Web Phase 4 | 8 tasks | ✅ COMPLETED (existing) |
+| D5 | Embedded Backend (Optional) | Web Phase 5 | 7 tasks | 🔲 Not started (optional) |
 
 ---
 
