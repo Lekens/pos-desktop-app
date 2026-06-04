@@ -5,13 +5,15 @@ import { ipcMain } from 'electron'
 const UPDATE_CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000 // 4 hours
 
 export function setupUpdater(win: BrowserWindow) {
-  autoUpdater.autoDownload = true
+  // autoDownload:false — the download only begins after the user explicitly accepts
+  // the update prompt in the UpdateBanner component (via update:download IPC).
+  autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = true
 
   autoUpdater.on('update-available', (info) => {
     win.webContents.send('update:available', {
-      version: info.version,
-      releaseDate: info.releaseDate,
+      version:      info.version,
+      releaseDate:  info.releaseDate,
       releaseNotes: info.releaseNotes,
     })
   })
@@ -36,7 +38,7 @@ export function setupUpdater(win: BrowserWindow) {
     )
   }, UPDATE_CHECK_INTERVAL_MS)
 
-  // IPC: manual check from renderer
+  // IPC: manual check from renderer (e.g. Settings page)
   ipcMain.handle('update:check', async () => {
     try {
       await autoUpdater.checkForUpdates()
@@ -46,7 +48,17 @@ export function setupUpdater(win: BrowserWindow) {
     }
   })
 
-  // IPC: install update
+  // IPC: user accepted update — begin download
+  ipcMain.handle('update:download', async () => {
+    try {
+      await autoUpdater.downloadUpdate()
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      console.error('[updater] Download failed:', message)
+    }
+  })
+
+  // IPC: install the already-downloaded update
   ipcMain.on('update:install', () => {
     autoUpdater.quitAndInstall(false, true)
   })

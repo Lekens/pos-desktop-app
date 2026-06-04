@@ -1,4 +1,4 @@
-import { Tray, Menu, BrowserWindow, nativeImage, app } from 'electron'
+import { Tray, Menu, BrowserWindow, nativeImage, type NativeImage, app } from 'electron'
 import { join } from 'path'
 
 const isMac = process.platform === 'darwin'
@@ -12,7 +12,7 @@ export function setupTray(win: BrowserWindow, onQuit: () => void) {
   const iconFile = isMac ? 'icon.png' : isWin ? 'icon.ico' : 'icon.png'
   const iconPath = join(__dirname, '../../resources', iconFile)
 
-  let trayIcon: nativeImage
+  let trayIcon: NativeImage
   try {
     trayIcon = nativeImage.createFromPath(iconPath)
     // macOS menu bar icons should be 16×16 (or 22×22 for retina)

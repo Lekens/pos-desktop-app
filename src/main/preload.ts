@@ -38,8 +38,9 @@ const api: ElectronAPI = {
   setAutoStart: (enabled: boolean) => ipcRenderer.invoke('config:set-auto-start', enabled),
 
   // ── Auto-update ───────────────────────────────────────────────────────────
-  checkForUpdates: () => ipcRenderer.invoke('update:check'),
-  installUpdate: () => ipcRenderer.send('update:install'),
+  checkForUpdates:  () => ipcRenderer.invoke('update:check'),
+  downloadUpdate:   () => ipcRenderer.invoke('update:download'),
+  installUpdate:    () => ipcRenderer.send('update:install'),
 
   // ── Events: main → renderer ───────────────────────────────────────────────
   onUpdateAvailable: (callback) =>
@@ -54,7 +55,21 @@ const api: ElectronAPI = {
     ipcRenderer.on('window:maximize-change', (_, maximized: boolean) => callback(maximized)),
 
   // ── Cleanup ───────────────────────────────────────────────────────────────
-  removeAllListeners: (channel: string) => ipcRenderer.removeAllListeners(channel),
+  // Restricted to a hardcoded allowlist — prevents a compromised renderer from
+  // silencing arbitrary IPC channels (e.g. disabling update:downloaded).
+  removeAllListeners: (channel: string) => {
+    const ALLOWED_CHANNELS = new Set([
+      'update:available',
+      'update:downloaded',
+      'printer:error',
+      'network:status',
+      'window:maximize-change',
+      'trigger:update-check',
+    ])
+    if (ALLOWED_CHANNELS.has(channel)) {
+      ipcRenderer.removeAllListeners(channel)
+    }
+  },
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)

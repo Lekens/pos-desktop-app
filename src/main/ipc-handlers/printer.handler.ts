@@ -38,6 +38,11 @@ function buildReceiptBuffer(lines: ReceiptLine[], paperWidth: 58 | 80): Buffer {
 
     if (line.type === 'barcode' && line.content) {
       const data = line.content
+      // CODE128 length is encoded as a single byte — max 255 characters.
+      if (data.length > 255) {
+        console.warn(`[printer] Barcode data truncated: ${data.length} chars exceeds 255-byte ESC/POS limit`)
+        continue
+      }
       // CODE128 automatic mode
       parts.push(
         CMD.ALIGN_CENTER,
@@ -133,6 +138,9 @@ export function registerPrinterHandlers() {
 
   // Print receipt
   ipcMain.handle('printer:print-receipt', async (event, lines: ReceiptLine[]) => {
+    if (!Array.isArray(lines) || lines.length === 0) {
+      return { success: false, error: 'Invalid or empty lines array' }
+    }
     const paperWidth = (store.get('printerPaperWidth') as 58 | 80) || 80
     const buffer = buildReceiptBuffer(lines, paperWidth)
 

@@ -85,8 +85,9 @@ export interface ElectronAPI {
   setConfig: <K extends keyof AppConfig>(key: K, value: AppConfig[K]) => Promise<void>
   setAutoStart: (enabled: boolean) => Promise<void>
 
-  checkForUpdates: () => Promise<void>
-  installUpdate: () => void
+  checkForUpdates:  () => Promise<void>
+  downloadUpdate:   () => Promise<void>
+  installUpdate:    () => void
 
   onUpdateAvailable: (callback: (info: UpdateInfo) => void) => void
   onUpdateDownloaded: (callback: () => void) => void

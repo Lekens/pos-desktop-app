@@ -11,12 +11,13 @@ directories:
   buildResources: resources
 
 # Files to include in the packaged Electron app
+# NOTE: .env is intentionally excluded — secrets must never be bundled into the installer.
+# All runtime configuration is stored in electron-store after first launch.
 files:
   - dist-electron/**/*
   - "!dist-electron/**/*.map"
   - node_modules/**/*
   - package.json
-  - .env
 
 # Copy the built React frontend into app resources
 extraResources:
@@ -39,7 +40,12 @@ win:
   # Do not require admin rights to install
   requestedExecutionLevel: asInvoker
 
-  # Code signing (uncomment when you have a certificate)
+  # Code signing — required before public distribution (BUG-002).
+  # Without signing, Windows SmartScreen blocks the installer for all users.
+  # Set these environment variables in your CI pipeline (GitHub Actions, etc.):
+  #   CERTIFICATE_BASE64   — base64-encoded .pfx certificate
+  #   CERTIFICATE_PASSWORD — certificate passphrase
+  # Then uncomment the block below:
   # signAndEditExecutable: true
   # certificateFile: resources/certificate.pfx
   # certificatePassword: ${env.CERTIFICATE_PASSWORD}
@@ -79,13 +85,18 @@ mac:
   entitlements: resources/entitlements.mac.plist
   entitlementsInherit: resources/entitlements.mac.plist
 
-  # Code signing (requires Apple Developer Program — $99/year)
-  # Leave blank for development/internal use; users must right-click → Open
-  # identity: "Developer ID Application: Your Name (TEAMID)"
+  # Code signing — required before public distribution (BUG-002).
+  # Without signing, macOS Gatekeeper blocks the app with "unidentified developer".
+  # Set these environment variables in your CI pipeline:
+  #   APPLE_ID              — your Apple Developer account email
+  #   APPLE_APP_SPECIFIC_PASSWORD — app-specific password from appleid.apple.com
+  #   APPLE_TEAM_ID         — 10-character team ID from developer.apple.com
+  # Then uncomment the block below:
+  # identity: "Developer ID Application: Your Name (APPLE_TEAM_ID)"
 
   # Notarization (requires code signing + Apple account credentials)
   # notarize:
-  #   teamId: "YOUR_TEAM_ID"
+  #   teamId: ${env.APPLE_TEAM_ID}
 
 dmg:
   artifactName: "POS-${version}.dmg"
@@ -108,8 +119,8 @@ dmg:
 # Supports both Windows (.exe + .yml) and macOS (.dmg + .yml) releases
 publish:
   provider: github
-  owner: your-github-username
-  repo: pos-v2-releases
+  owner: YOUR_GITHUB_ORG        # TODO: replace with actual GitHub org/username before enabling auto-update
+  repo: pos-v2-releases          # TODO: replace with actual repository name
   private: false
   releaseType: release
 

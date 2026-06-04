@@ -116,7 +116,10 @@ function createWindow() {
       preload: join(__dirname, 'preload.js'),
       contextIsolation: true,       // Security: isolate renderer from main
       nodeIntegration: false,       // Security: no Node in renderer
-      sandbox: false,               // Required for preload with IPC
+      // sandbox:false is required because our preload.ts uses CommonJS require() (via tsc/CJS output).
+      // Chromium's sandbox mode only supports ESM preloads. Tracked as a future hardening task:
+      // migrate preload to ESM output so sandbox:true can be enabled.
+      sandbox: false,
       webSecurity: true,
       allowRunningInsecureContent: false,
       devTools: isDev,
