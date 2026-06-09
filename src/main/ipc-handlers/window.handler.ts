@@ -1,4 +1,5 @@
 import { ipcMain, BrowserWindow, app } from 'electron'
+import { store } from './config.handler'
 
 export function registerWindowHandlers(win: BrowserWindow) {
   ipcMain.on('window:minimize', () => win.minimize())
@@ -17,7 +18,11 @@ export function registerWindowHandlers(win: BrowserWindow) {
 
   ipcMain.handle('app:version', () => app.getVersion())
 
-  ipcMain.handle('app:backend-url', () => process.env.ELECTRON_BACKEND_URL ?? 'http://localhost:3003')
+  // Read from electron-store so the user's saved URL (set via Settings or login page) is used.
+  // Fall back to env var, then hardcoded default.
+  ipcMain.handle('app:backend-url', () =>
+    store.get('backendUrl') ?? process.env.ELECTRON_BACKEND_URL ?? 'http://localhost:3003/'
+  )
 
   // Notify renderer when maximise state changes
   win.on('maximize', () => win.webContents.send('window:maximize-change', true))
