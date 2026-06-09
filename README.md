@@ -225,6 +225,7 @@ npm run build:win
 
 | Document | What it covers |
 |----------|---------------|
+| [`docs/build-and-run-personal.md`](docs/build-and-run-personal.md) | **Build & launch on your personal Mac and Windows laptop (start here)** |
 | [`docs/architecture.md`](docs/architecture.md) | Main/renderer processes, IPC channels, preload, security model |
 | [`docs/native-features.md`](docs/native-features.md) | Thermal printer (ESC/POS), cash drawer, barcode scanner, notifications |
 | [`docs/setup.md`](docs/setup.md) | Full developer setup guide step-by-step |

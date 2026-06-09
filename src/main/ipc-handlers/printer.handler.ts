@@ -130,7 +130,7 @@ export function registerPrinterHandlers() {
   ipcMain.handle('printer:get-list', async () => {
     try {
       const ports = await SerialPort.list()
-      return ports.map(p => ({ path: p.path, manufacturer: p.manufacturer ?? 'Unknown' }))
+      return ports.map(port => ({ path: port.path, manufacturer: port.manufacturer ?? 'Unknown' }))
     } catch {
       return []
     }
