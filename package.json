@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "concurrently -n \"VITE,ELECTRON\" -c \"cyan,yellow\" \"npm run vite:dev\" \"npm run electron:wait-and-start\"",
     "vite:dev": "cd ../POS-frontend-v2 && npm run dev",
-    "electron:wait-and-start": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
+    "electron:wait-and-start": "wait-on http://localhost:5173 && npm run build:main && cross-env NODE_ENV=development electron .",
     "electron:dev": "cross-env NODE_ENV=development electron .",
     "build:main": "tsc -p tsconfig.json",
     "build:frontend": "cd ../POS-frontend-v2 && cross-env BUILD_TARGET=electron npm run build",

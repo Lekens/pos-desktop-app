@@ -5,7 +5,7 @@ import { setupTray } from './tray-manager'
 import { setupUpdater } from './updater'
 import { registerPrinterHandlers } from './ipc-handlers/printer.handler'
 import { registerDrawerHandlers } from './ipc-handlers/drawer.handler'
-import { registerConfigHandlers } from './ipc-handlers/config.handler'
+import { registerConfigHandlers, store } from './ipc-handlers/config.handler'
 import { registerWindowHandlers } from './ipc-handlers/window.handler'
 
 const isDev    = process.env.NODE_ENV === 'development'
@@ -69,7 +69,15 @@ function setupAppMenu() {
 
 // ─── Content Security Policy ───────────────────────────────────────────────────
 function applyContentSecurityPolicy() {
+  // Vite HMR injects inline scripts and uses eval — skip CSP in dev.
+  // CSP is enforced in packaged production builds only.
+  if (isDev) return
+
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    // Read the runtime-configured backend URL on every request so the CSP
+    // always reflects what the user has saved (via Settings or the login-page
+    // server-URL editor), even if it was changed after app startup.
+    const runtimeBackendUrl = store.get('backendUrl') ?? backendUrl
     callback({
       responseHeaders: {
         ...details.responseHeaders,
@@ -78,7 +86,7 @@ function applyContentSecurityPolicy() {
           `script-src 'self'; ` +
           `style-src 'self' 'unsafe-inline'; ` +     // Tailwind CSS requires this
           `img-src 'self' data: blob:; ` +
-          `connect-src 'self' ${backendUrl} ws://localhost:5173 wss://localhost:5173; ` +
+          `connect-src 'self' ${runtimeBackendUrl} ws://localhost:5173 wss://localhost:5173; ` +
           `font-src 'self' data:; ` +
           `object-src 'none';`,
         ],
