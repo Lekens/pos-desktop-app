@@ -316,7 +316,241 @@ This appears once per machine. After that, the app opens normally.
 
 ---
 
-## Part 3 — Running in Development Mode (No Build Required)
+## Part 3 — Building the Windows Installer FROM Your Mac (Cross-Compilation)
+
+You do not need a Windows machine to produce the Windows `.exe`.
+electron-builder supports cross-compilation, but generating the NSIS installer (`.exe` with a setup wizard)
+requires Wine to be available on your Mac.
+Three methods are listed below — choose the one that fits your situation.
+
+| Method | Works on Apple Silicon? | Produces NSIS installer? | Extra tools needed |
+|---|---|---|---|
+| **A — Docker** (recommended) | ✅ Yes | ✅ Yes | Docker Desktop |
+| **B — Wine** | ⚠️ Intel only (via Rosetta) | ✅ Yes | Wine |
+| **C — Portable only** | ✅ Yes | ✗ No installer | Nothing |
+
+---
+
+### Method A — Docker (recommended, works on Intel and Apple Silicon)
+
+Docker provides a Linux + Wine environment that electron-builder knows how to use.
+This is the most reliable cross-compilation path and works on all Mac hardware.
+
+#### Step 3A.1 — Install Docker Desktop
+
+1. Download from [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+2. Install and launch it — you should see the Docker whale icon in your menu bar
+3. Verify it is running:
+```bash
+docker --version
+# Expected: Docker version 27.x.x or higher
+```
+
+#### Step 3A.2 — Build the React Frontend (Mac-side)
+
+```bash
+cd /path/to/POS_CHOICES/POS-frontend-v2
+npm install
+npm run build
+# Output goes to POS-frontend-v2/dist/
+```
+
+#### Step 3A.3 — Compile the Electron Main Process (Mac-side)
+
+```bash
+cd /path/to/POS_CHOICES/POS-desktop-app
+npm install
+npm run build:main
+# Compiles src/main/ → dist-electron/
+```
+
+#### Step 3A.4 — Build the Windows Installer via Docker
+
+Run the electron-builder Docker image, mounting your project folder as a volume:
+
+```bash
+# Navigate to the desktop app root first
+cd /path/to/POS_CHOICES/POS-desktop-app
+
+# Run the builder container — this pulls ~600 MB on first use
+docker run --rm \
+  -v "$(pwd)":/project \
+  -v "$(pwd)/../POS-frontend-v2/dist":/project/../POS-frontend-v2/dist \
+  -w /project \
+  electronuserland/builder:wine \
+  /bin/bash -c "npm install && npx electron-builder --win --x64 --publish never"
+```
+
+> **Shorthand:** If the frontend `dist/` is already inside the repo tree, the second `-v` line is not needed — the first mount covers everything under `POS_CHOICES/`.
+
+A simpler single-line version when the entire `POS_CHOICES/` folder is checked out together:
+
+```bash
+cd /path/to/POS_CHOICES/POS-desktop-app
+
+docker run --rm \
+  -v "$(pwd)/..":/root/project \
+  -w /root/project/POS-desktop-app \
+  electronuserland/builder:wine \
+  /bin/bash -c "npx electron-builder --win --x64 --publish never"
+```
+
+The first run downloads the Docker image (~600 MB) and then runs the build.
+Subsequent runs skip the download and finish in 3–5 minutes.
+
+#### Step 3A.5 — Collect the output
+
+```
+POS-desktop-app/release/
+  POS-Setup-1.0.0.exe      ← Windows NSIS installer
+  POS-1.0.0.exe             ← Windows portable (also produced)
+  win-unpacked/             ← Unpacked Windows app folder
+```
+
+Transfer `POS-Setup-1.0.0.exe` to the Windows machine (USB drive, network share, Google Drive, etc.) and install it as described in Step 2.7.
+
+---
+
+### Method B — Wine (Intel Mac only — not recommended on Apple Silicon)
+
+Wine runs Windows executables on macOS. electron-builder uses it automatically when it is on your PATH.
+
+> **Apple Silicon warning:** Wine requires Rosetta 2 on M-series Macs and is unreliable for this use case. Use Method A (Docker) instead if you are on an M1/M2/M3/M4.
+
+#### Step 3B.1 — Install Rosetta 2 (Apple Silicon only — skip on Intel)
+
+```bash
+softwareupdate --install-rosetta --agree-to-license
+```
+
+#### Step 3B.2 — Install Wine via Homebrew
+
+```bash
+# If Homebrew is not installed:
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Wine (stable)
+brew install --cask wine-stable
+
+# Verify
+wine --version
+# Expected: wine-9.x.x or similar
+```
+
+If `brew install wine-stable` fails on Apple Silicon, try:
+```bash
+arch -x86_64 brew install --cask wine-stable
+```
+
+#### Step 3B.3 — Build the React Frontend
+
+```bash
+cd /path/to/POS_CHOICES/POS-frontend-v2
+npm install
+npm run build
+```
+
+#### Step 3B.4 — Build the Windows Installer
+
+```bash
+cd /path/to/POS_CHOICES/POS-desktop-app
+npm install
+
+# Standard NSIS installer (.exe with setup wizard)
+npm run build:win
+```
+
+electron-builder detects Wine on your PATH and uses it automatically to run the NSIS compiler.
+
+**Output:**
+```
+POS-desktop-app/release/
+  POS-Setup-1.0.0.exe      ← Windows NSIS installer
+  POS-1.0.0.exe             ← Windows portable
+```
+
+---
+
+### Method C — Portable .exe (no Wine or Docker required)
+
+If you only need a standalone `.exe` to test on a Windows machine and don't need a proper installer
+with a setup wizard, uninstaller, and Start Menu entry, this is the fastest approach.
+It requires no extra tools.
+
+```bash
+cd /path/to/POS_CHOICES/POS-frontend-v2
+npm install
+npm run build
+
+cd /path/to/POS_CHOICES/POS-desktop-app
+npm install
+npm run build:win-portable
+```
+
+**Output:**
+```
+POS-desktop-app/release/
+  POS-1.0.0.exe     ← Portable: copy to Windows and double-click to run
+```
+
+**Limitations of portable vs. installer:**
+- No setup wizard, no Start Menu or Desktop shortcut created automatically
+- No uninstaller (just delete the `.exe`)
+- Windows SmartScreen warning still appears on first run (see Step 2.7)
+- Settings are still persisted in `AppData\Roaming\POS-v2\` as normal
+
+For distributing to customers or staff, use Method A or B to produce the proper installer.
+The portable is fine for personal testing.
+
+---
+
+### Cross-compilation: How native modules are handled
+
+`serialport` is a native Node.js module — it has `.node` binary files compiled for a specific OS
+and architecture. You cannot run the Mac `.node` on Windows.
+
+electron-builder handles this automatically during cross-compilation:
+- It calls `install-app-deps` for the target platform before packaging
+- This downloads **prebuilt Windows binaries** for `serialport` from the electron-builder GitHub releases
+- No manual step is needed; the correct `.node` file for `win32-x64` is fetched and bundled
+
+If the download fails (offline or rate-limited), set the npm mirror:
+```bash
+export ELECTRON_BUILDER_CACHE=~/.cache/electron-builder
+npm run build:win
+```
+
+---
+
+### Troubleshooting Cross-Compilation from Mac
+
+**`NSIS is not installed` or `wine not found`**
+You are trying Method B without Wine installed. Either install Wine (Step 3B.2) or switch to Method A (Docker).
+
+**`Cannot find module '...dist-electron/main/main.js'`**
+Run `npm run build:main` in `POS-desktop-app/` before running the Windows build command.
+
+**`Error: Cannot find ../POS-frontend-v2/dist`**
+Run `npm run build` in `POS-frontend-v2/` first, then retry.
+
+**Docker container exits with permission error**
+Add `--user "$(id -u):$(id -g)"` after `docker run`:
+```bash
+docker run --rm --user "$(id -u):$(id -g)" \
+  -v "$(pwd)":/project -w /project \
+  electronuserland/builder:wine \
+  /bin/bash -c "npx electron-builder --win --x64 --publish never"
+```
+
+**Apple Silicon: Wine crashes or hangs**
+Use Docker (Method A). Wine requires x86 emulation via Rosetta on M-series Macs and is unreliable for building.
+
+**The `.exe` runs on your Mac but the Windows machine says "not a valid Win32 application"**
+You accidentally built a macOS binary. Confirm you ran `--win --x64` and that the Docker container (not your Mac) performed the packaging step.
+
+---
+
+## Part 4 — Running in Development Mode (No Build Required)
 
 If you just want to test the app quickly without building an installer, use development mode.
 This loads the React app from the Vite dev server instead of a built file.
@@ -357,8 +591,9 @@ Changes to React components hot-reload inside the Electron window automatically.
 | Build React frontend (required before packaging) | `npm run build` | `POS-frontend-v2/` |
 | Build macOS .dmg | `npm run build:mac-dmg` | `POS-desktop-app/` |
 | Build macOS .dmg + .zip (both) | `npm run build:mac` | `POS-desktop-app/` |
-| Build Windows installer (.exe) | `npm run build:win` | `POS-desktop-app/` |
-| Build Windows portable .exe | `npm run build:win-portable` | `POS-desktop-app/` |
+| Build Windows installer (.exe) on Windows | `npm run build:win` | `POS-desktop-app/` |
+| Build Windows portable .exe (any platform) | `npm run build:win-portable` | `POS-desktop-app/` |
+| Build Windows installer from Mac via Docker | see Part 3 Method A | `POS-desktop-app/` |
 | Build for both Mac and Windows at once | `npm run build:all` | `POS-desktop-app/` |
 | Recompile serialport after Node.js upgrade | `npm run rebuild-native` | `POS-desktop-app/` |
 | TypeScript check (no output) | `npm run typecheck` | `POS-desktop-app/` |
