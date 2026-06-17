@@ -1,8 +1,8 @@
 # electron-builder configuration — Windows + macOS
 # Documentation: https://www.electron.build/configuration/configuration
 
-appId: com.pos.v2.desktop
-productName: POS v2
+appId: ng.poschoice.desktop
+productName: POSChoice
 copyright: "Copyright © 2026"
 
 # Build output directory
@@ -57,7 +57,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: "POS v2"
+  shortcutName: "POSChoice"
   menuCategory: "POS v2"
   installerIcon: resources/icon.ico
   uninstallerIcon: resources/icon.ico
